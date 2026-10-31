@@ -64,17 +64,25 @@ Agar workflow deployment dan integrasi otomatis berjalan tanpa hambatan, masukka
 
 Untuk mengelola roadmap, bug, tugas, dan fitur SolBundler dengan visual Kanban:
 
-### Cara Membuat GitHub Project:
+> 📌 **Blueprint Lengkap & Daftar Task Siap Pakai**: Silakan lihat panduan detail dan daftar seed tasks di [**`.github/PROJECT_BOARD.md`**](.github/PROJECT_BOARD.md) serta file struktur [**`.github/project-template.json`**](.github/project-template.json).
+
+### Cara Cepat (Otomatis via Python Script):
+Jalankan skrip seeder kami untuk otomatis membuat label, milestone, dan kartu issue awal:
+```bash
+python3 scripts/setup_github_project.py --token <GITHUB_PERSONAL_ACCESS_TOKEN> --repo novi240397/SolBundler
+```
+
+### Cara Manual via GitHub Web:
 1. Di profil GitHub Anda atau di tab repository, klik menu **Projects**.
 2. Klik tombol **New project**.
 3. Pilih template **Board** (Kanban).
 4. Beri nama: `SolBundler Roadmap & Sprint`.
 5. Buat kolom status standar:
-   - 📥 **Backlog / Triage**: Ide baru dan issue masuk dari pengguna.
-   - 📋 **Todo / Ready**: Tugas yang telah diverifikasi dan siap dikerjakan.
-   - ⚙️ **In Progress**: Sedang dalam proses pengembangan kode.
-   - 🧪 **Testing & Review**: Sedang diuji di Solana Devnet / review PR.
-   - ✅ **Done**: Selesai dan telah dideploy ke production.
+   - 📥 **Backlog**: Ide baru dan usulan fitur.
+   - 📋 **Todo / Sprint Ready**: Tugas yang siap dieksekusi.
+   - ⚙️ **In Progress**: Sedang dalam pengembangan kode.
+   - 🧪 **Testing & Review**: Pengujian Devnet / PR review.
+   - ✅ **Done**: Selesai dan terverifikasi on-chain.
 
 ### Menghubungkan Project ke Repository:
 1. Di halaman Project Board, klik menu **...** (pojok kanan atas) ➡️ **Settings**.

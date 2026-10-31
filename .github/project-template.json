@@ -1,0 +1,103 @@
+{
+  "name": "SolBundler Development & Launch Board",
+  "description": "Production Kanban board for managing Solana stealth bundle launch, Rust Jito engine, Python volume bot, and security sprints.",
+  "views": [
+    {
+      "name": "Kanban Board",
+      "type": "board",
+      "groupBy": "Status"
+    },
+    {
+      "name": "Sprint Roadmap",
+      "type": "table",
+      "groupBy": "Sprint"
+    },
+    {
+      "name": "Priority Matrix",
+      "type": "table",
+      "sortBy": "Priority"
+    }
+  ],
+  "columns": [
+    "📥 Backlog",
+    "📋 Todo / Sprint Ready",
+    "⚙️ In Progress",
+    "🧪 Testing & Review",
+    "✅ Done"
+  ],
+  "customFields": [
+    {
+      "name": "Priority",
+      "type": "single_select",
+      "options": ["P0 - Critical", "P1 - High", "P2 - Medium", "P3 - Low"]
+    },
+    {
+      "name": "Module",
+      "type": "single_select",
+      "options": ["Wallet-Catalog", "Jito-MEV-Bundler", "Volume-Bot", "OKX-Disperser", "Security-Audit", "Infrastructure-RPC"]
+    },
+    {
+      "name": "Language",
+      "type": "single_select",
+      "options": ["🦀 Rust", "🐍 Python", "⚡ TypeScript"]
+    }
+  ],
+  "items": [
+    {
+      "title": "[P0] Client-Side Ed25519 Cryptographic Generator",
+      "status": "✅ Done",
+      "priority": "P0 - Critical",
+      "module": "Wallet-Catalog",
+      "language": "⚡ TypeScript"
+    },
+    {
+      "title": "[P0] Rust On-Chain Bundling Program (programs/solbundler)",
+      "status": "✅ Done",
+      "priority": "P0 - Critical",
+      "module": "Jito-MEV-Bundler",
+      "language": "🦀 Rust"
+    },
+    {
+      "title": "[P1] Rust Jito Searcher Client (crates/jito-bundler)",
+      "status": "✅ Done",
+      "priority": "P1 - High",
+      "module": "Jito-MEV-Bundler",
+      "language": "🦀 Rust"
+    },
+    {
+      "title": "[P1] Python Autonomous Volume Maker Script (volume_bot.py)",
+      "status": "✅ Done",
+      "priority": "P1 - High",
+      "module": "Volume-Bot",
+      "language": "🐍 Python"
+    },
+    {
+      "title": "[P1] Python OKX Stealth Disperser (okx_stealth_disperser.py)",
+      "status": "✅ Done",
+      "priority": "P1 - High",
+      "module": "OKX-Disperser",
+      "language": "🐍 Python"
+    },
+    {
+      "title": "[P1] Real-time Solana Balance Synchronization (8s Polling + Failover)",
+      "status": "✅ Done",
+      "priority": "P1 - High",
+      "module": "Infrastructure-RPC",
+      "language": "⚡ TypeScript"
+    },
+    {
+      "title": "[P2] Telegram Alert Bot Integration for Volume Spikes",
+      "status": "📋 Todo / Sprint Ready",
+      "priority": "P2 - Medium",
+      "module": "Volume-Bot",
+      "language": "🐍 Python"
+    },
+    {
+      "title": "[P2] Meteora DLMM Dynamic Pool Launch Integration",
+      "status": "📥 Backlog",
+      "priority": "P2 - Medium",
+      "module": "Jito-MEV-Bundler",
+      "language": "🦀 Rust"
+    }
+  ]
+}
