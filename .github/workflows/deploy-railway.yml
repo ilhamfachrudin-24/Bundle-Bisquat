@@ -1,0 +1,43 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-railway:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy application to Railway
+        run: |
+          if [ -n "${{ secrets.RAILWAY_SERVICE_NAME }}" ]; then
+            echo "Deploying to specific service: ${{ secrets.RAILWAY_SERVICE_NAME }}"
+            railway up --detach --service "${{ secrets.RAILWAY_SERVICE_NAME }}"
+          else
+            echo "Deploying default linked Railway project service"
+            railway up --detach
+          fi
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

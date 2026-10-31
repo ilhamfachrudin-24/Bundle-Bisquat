@@ -14,6 +14,7 @@ SolBundler adalah platform Web3 modern yang dirancang khusus untuk memfasilitasi
 - [Panduan Instalasi Lokal](#-panduan-instalasi-lokal)
 - [Konfigurasi Environment (.env)](#-konfigurasi-environment-variables)
 - [Panduan Upload ke GitHub & Deployment](#-panduan-upload-ke-github--deploy)
+- [Otomasi Deploy via GitHub Actions (CI/CD)](#-otomasi-deploy-via-github-actions-cicd)
 - [Struktur Folder](#-struktur-folder-proyek)
 - [Disclaimer & Risiko](#-disclaimer)
 
@@ -162,18 +163,86 @@ git push -u origin main
 
 > 🛡️ **Pengecekan Keamanan**: Periksa repository Anda di GitHub. Pastikan **HANYA** file `.env.example` yang terlihat. File `.env` atau `.env.local` tidak akan pernah muncul di GitHub karena telah dilindungi oleh file `.gitignore`.
 
-### Langkah 2: Deploy ke Vercel (Rekomendasi Terbaik)
+### Langkah 2: Deploy ke Vercel
 1. Kunjungi [vercel.com](https://vercel.com) dan masuk dengan akun GitHub Anda.
 2. Klik **"Add New..."** ➜ **"Project"**.
-3. Pilih repository GitHub yang baru saja Anda push.
+3. Pilih repository GitHub Anda.
 4. Pada bagian **Environment Variables**, masukkan variabel yang dibutuhkan (misal: `SOLANA_RPC_ENDPOINT`, `PINATA_JWT`, dll).
-5. Klik **"Deploy"**. Dalam 1–2 menit, aplikasi Anda akan online dengan domain HTTPS gratis!
+5. Klik **"Deploy"**.
+
+### Langkah 3: Deploy ke Railway
+Railway adalah platform cloud modern yang sangat cocok untuk aplikasi Next.js:
+1. Buka [railway.com](https://railway.com) dan login dengan akun GitHub Anda.
+2. Klik **"New Project"** ➜ **"Deploy from GitHub repo"**.
+3. Pilih repository SolBundler Anda.
+4. Railway otomatis membaca konfigurasi `railway.json` kami dan menjalankan build & start.
+5. Buka tab **Variables** di Railway Dashboard dan tambahkan environment variable yang dibutuhkan (seperti `NEXT_PUBLIC_SOLANA_RPC_URL`, `SOLANA_RPC_ENDPOINT`).
+6. Buka tab **Settings** ➜ **Networking** ➜ Klik **Generate Domain** untuk mendapatkan URL HTTPS publik.
+
+---
+
+## 🤖 Otomasi Deploy via GitHub Actions (CI/CD)
+
+Repository ini telah dilengkapi dengan 4 workflow GitHub Actions otomatis di folder `.github/workflows/`:
+
+| Workflow File | Fungsi & Pemicu |
+|---------------|-----------------|
+| **`ci.yml`** | Menjalankan typecheck & build Next.js pada setiap `push` dan `pull_request`. |
+| **`deploy.yml`** | Otomasi deploy ke **Vercel Production** saat push ke branch `main`. |
+| **`deploy-railway.yml`** | Otomasi deploy ke **Railway** via Railway CLI saat push ke branch `main`. |
+| **`security.yml`** | Memindai kebocoran kunci privat (*secret leaks* via Gitleaks), analisis keamanan kode (CodeQL SAST), dan audit dependensi npm. |
+
+---
+
+### 🔑 Menyiapkan GitHub Secrets untuk Deploy Otomatis
+
+Buka repository GitHub Anda ➜ Pilih tab **Settings** ➜ **Secrets and variables** ➜ **Actions** ➜ Klik **New repository secret**:
+
+#### A. Secrets untuk Deploy Railway (`deploy-railway.yml`)
+| Nama Secret | Wajib? | Cara Mendapatkannya |
+|-------------|:------:|---------------------|
+| `RAILWAY_TOKEN` | **Wajib** | Buka [railway.com/account/tokens](https://railway.com/account/tokens) (atau Project Settings ➜ Tokens) ➜ Generate token baru ➜ Salin nilainya. |
+| `RAILWAY_SERVICE_NAME` | Opsional | Nama service spesifik di project Railway Anda (jika memiliki lebih dari satu service). |
+
+#### B. Secrets untuk Deploy Vercel (`deploy.yml`)
+| Nama Secret | Wajib? | Cara Mendapatkannya |
+|-------------|:------:|---------------------|
+| `VERCEL_TOKEN` | **Wajib** | Buka [vercel.com/account/tokens](https://vercel.com/account/tokens) ➜ Klik Create Token. |
+| `VERCEL_ORG_ID` | **Wajib** | Vercel Dashboard ➜ Settings ➜ General ➜ Team/User ID. |
+| `VERCEL_PROJECT_ID` | **Wajib** | Vercel Project ➜ Settings ➜ General ➜ Project ID. |
+
+---
+
+## 🛡️ Panduan Keamanan GitHub (Anti-Hack Protection)
+
+Agar repository, akun GitHub, dan aset token Anda aman dari peretasan (*hack*), sistem ini dilengkapi perlindungan berlapis:
+
+1. **Secret Scanning Otomatis (Gitleaks)**:
+   - Workflow `security.yml` memindai riwayat commit & pull request untuk memastikan tidak ada kunci privat Solana (Base58 88-char), API token, atau secret CEX yang bocor ke publik.
+2. **Analisis Keamanan Kode Statis (GitHub CodeQL SAST)**:
+   - Memindai codebase secara otomatis untuk mencegah serangan injeksi, XSS, prototype pollution, dan celah eksekusi kode berbahaya.
+3. **Pembaruan Kerentanan Dependensi (Dependabot)**:
+   - File `.github/dependabot.yml` memantau semua paket npm dan GitHub Actions setiap minggu, serta otomatis membuka Pull Request patch jika ada celah CVE baru.
+4. **Prinsip Hak Akses Terendah (Least-Privilege)**:
+   - Semua workflow GitHub Actions hanya diberikan izin `contents: read` untuk mencegah eksploitasi runner hijacking.
+5. **Checklist Keamanan Akun Anda**:
+   - Aktifkan **Two-Factor Authentication (2FA)** di akun GitHub Anda.
+   - Aktifkan **Branch Protection** pada branch `main` (wajibkan PR dan check lulus sebelum merge).
+   - Jangan pernah menyimpan private key master wallet Anda di file proyek.
+   - Baca panduan lengkap di [SECURITY.md](./SECURITY.md).
 
 ---
 
 ## 📁 Struktur Folder Proyek
 
 ```text
+├── .github/
+│   ├── dependabot.yml        # Dependabot automated dependency security scanner
+│   └── workflows/
+│       ├── ci.yml            # Automated CI build & test check on push/PR
+│       ├── deploy.yml        # Automated production deployment to Vercel
+│       ├── deploy-railway.yml# Automated deployment to Railway via Railway CLI
+│       └── security.yml      # Gitleaks secret scanning & CodeQL SAST security analysis
 ├── app/                      # Next.js 15 App Router
 │   ├── api/                  # Server-side API proxy routes (RPC, funding, pinata)
 │   ├── layout.tsx            # Root layout & font configurations
@@ -198,6 +267,8 @@ git push -u origin main
 ├── metadata.json             # Manifest metadata aplikasi
 ├── next.config.ts            # Konfigurasi Next.js
 ├── package.json              # Daftar pustaka & skrip eksekusi
+├── railway.json              # Konfigurasi deployment Railway platform
+├── SECURITY.md               # Kebijakan keamanan & panduan anti-hack
 └── tsconfig.json             # Konfigurasi TypeScript
 ```
 
