@@ -1,0 +1,75 @@
+name: "GitHub Project & Issue Automation"
+
+on:
+  issues:
+    types: [opened, reopened, labeled]
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  issues: write
+  pull-requests: write
+  repository-projects: write
+  contents: read
+
+jobs:
+  triage_and_project:
+    name: "Triage & Add to GitHub Project"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Auto-label New Issues"
+        if: github.event_name == 'issues' && github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labelsToAdd = ['triage'];
+            
+            // Auto categorize based on title
+            const title = issue.title.toLowerCase();
+            if (title.includes('[bug]')) {
+              labelsToAdd.push('bug');
+            } else if (title.includes('[feature]')) {
+              labelsToAdd.push('enhancement');
+            } else if (title.includes('[launch-support]')) {
+              labelsToAdd.push('launch-support');
+            }
+            
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: labelsToAdd
+            });
+            
+            // Post friendly triage comment
+            const welcomeComment = `👋 Halo @${issue.user.login}! Terima kasih telah membuka issue di **SolBundler**.\n\nIssue ini telah dicatat dan masuk ke antrean triage GitHub Project kami. Tim kami akan segera meninjaunya.\n\n🔒 *Pengingat Keamanan:* Jangan pernah membagikan Solana Private Key atau Seed Phrase Anda di sini.`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: welcomeComment
+            });
+
+      - name: "Auto-label New Pull Requests"
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: ['needs-review', 'pr']
+            });
+
+      - name: "Add to GitHub Project (Optional)"
+        uses: actions/add-to-project@v1.0.2
+        if: env.PROJECT_URL != ''
+        continue-on-error: true
+        with:
+          project-url: ${{ secrets.GH_PROJECT_URL }}
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT || secrets.GITHUB_TOKEN }}
+        env:
+          PROJECT_URL: ${{ secrets.GH_PROJECT_URL }}

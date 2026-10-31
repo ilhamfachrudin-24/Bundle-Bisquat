@@ -1,0 +1,49 @@
+name: "✨ Usulan Fitur Baru (Feature Request)"
+description: "Ajukan ide atau peningkatan fungsionalitas baru untuk SolBundler"
+title: "[FEATURE]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih atas usulan inovatif Anda untuk menyempurnakan SolBundler!
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori Fitur
+      description: Di bagian mana fitur ini akan diimplementasikan?
+      options:
+        - "Strategi Volume Bot (Jitter, Volume Target, Delay randomness)"
+        - "DEX Integration (Meteora DLMM, Raydium CPMM, Orca Whirlpools)"
+        - "Jito Tip Optimizer & Fast MEV Bundling"
+        - "Wallet Management (Auto disperser, Sub-wallet auto reclaimer)"
+        - "Telegram Bot Alert / Discord Webhook Integration"
+        - "Analytics & PnL Tracker"
+        - "Lainnya"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah / Kebutuhan yang Ingin Diselesaikan
+      description: Apakah fitur ini berkaitan dengan suatu masalah atau alur kerja yang belum optimal?
+      placeholder: Contoh: Saat ini dispersi SOL ke 20 sub-wallet harus dilakukan manual satu per satu...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solusi atau Fitur yang Diusulkan
+      description: Jelaskan gambaran jelas tentang bagaimana fitur baru ini akan bekerja.
+      placeholder: Buat tombol 'One-Click Batch Disperse' dengan fee Jito bundle sehingga SOL terkirim dalam 1 slot...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatif yang Pernah Dipertimbangkan (Opsional)
+      description: Alternatif solusi atau alat lain yang pernah Anda coba.

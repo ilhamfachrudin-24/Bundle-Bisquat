@@ -1,0 +1,48 @@
+name: "🚀 Bantuan Token Launch & Jito Bundling"
+description: "Pertanyaan atau kendala spesifik saat melakukan bundling token launch di SolBundler"
+title: "[LAUNCH-SUPPORT]: "
+labels: ["launch-support", "help-wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gunakan template ini jika Anda mengalami kendala saat setup token launch, estimasi Jito Tip, atau bundle simulator.
+        ⚠️ **PENTING: JANGAN PERNAH MEMBAGIKAN PRIVATE KEY, SECRET RECOVERY PHRASE, ATAU API KEY DALAM KONDISI APA PUN!**
+
+  - type: dropdown
+    id: dex
+    attributes:
+      label: Target Launch Platform
+      options:
+        - "Pump.fun (Bonding Curve Launch)"
+        - "Raydium AMM (OpenBook Market ID + Liquidity Pool)"
+        - "Raydium CPMM"
+        - "Meteora Dynamic AMM / DLMM"
+    validations:
+      required: true
+
+  - type: input
+    id: wallet_count
+    attributes:
+      label: Jumlah Sub-Wallet yang Digunakan
+      placeholder: Contoh: 12 wallet
+    validations:
+      required: true
+
+  - type: textarea
+    id: question_or_issue
+    attributes:
+      label: Kendala yang Dihadapi
+      description: Jelaskan pertanyaan atau langkah di mana Anda mengalami kesulitan.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verifikasi
+      options:
+        - label: Saya mengonfirmasi saldo SOL dev/main wallet mencukupi untuk gas fee dan Jito Tip.
+          required: true
+        - label: Saya telah mengecek koneksi RPC Solana aktif dan latency normal.
+          required: true

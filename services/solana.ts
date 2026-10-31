@@ -14,13 +14,33 @@ export function getSolanaConnection(rpcUrl: string = DEFAULT_SOLANA_RPC): Connec
 
 export async function fetchLiveSolBalance(pubkeyString: string): Promise<number | null> {
   if (!isValidSolanaAddress(pubkeyString)) return null;
+
+  // 1. Try our internal server API proxy first (avoids browser CORS & rate limits)
+  if (typeof window !== 'undefined') {
+    try {
+      const res = await fetch('/api/solana/balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address: pubkeyString.trim() })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (typeof data.balanceSol === 'number') {
+          return data.balanceSol;
+        }
+      }
+    } catch {
+      // Fall through to direct RPC connection
+    }
+  }
+
+  // 2. Direct RPC fallback
   try {
     const conn = getSolanaConnection();
     const pubkey = new PublicKey(pubkeyString.trim());
     const lamports = await conn.getBalance(pubkey);
     return Number(lamports) / 1_000_000_000;
   } catch (error) {
-    console.warn('Failed to fetch balance from primary Solana RPC, trying fallback...', error);
     try {
       const fallbackConn = new Connection('https://rpc.ankr.com/solana', 'confirmed');
       const pubkey = new PublicKey(pubkeyString.trim());

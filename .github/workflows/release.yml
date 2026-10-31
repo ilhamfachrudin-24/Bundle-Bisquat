@@ -1,0 +1,50 @@
+name: "Release & Artifact Publish"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  build_release:
+    name: "Build and Create GitHub Release"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Setup Node.js 20"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: "Install Dependencies"
+        run: npm ci
+
+      - name: "Build Next.js Application"
+        run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: "Archive Build Files"
+        run: |
+          tar -czf solbundler-${{ github.ref_name }}.tar.gz package.json package-lock.json next.config.ts public .next
+        shell: bash
+
+      - name: "Create GitHub Release"
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "SolBundler ${{ github.ref_name }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          files: |
+            solbundler-${{ github.ref_name }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

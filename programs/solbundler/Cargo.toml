@@ -1,0 +1,22 @@
+[package]
+name = "solbundler-program"
+version = "0.1.0"
+description = "Solana on-chain program for atomic multi-wallet stealth token bundling and Jito tip distribution"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "solbundler"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+solana-program = "=1.18.17"
+borsh = "^0.10.3"
+thiserror = "1.0"
+spl-token = { version = "=4.0.0", features = ["no-entrypoint"] }

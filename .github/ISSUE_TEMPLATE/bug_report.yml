@@ -1,0 +1,86 @@
+name: "🐛 Laporan Bug / Error"
+description: "Laporkan masalah atau kendala teknis pada SolBundler (RPC, Wallet, Bundling, UI)"
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah melaporkan bug. Pastikan tidak menyertakan **Private Key**, **Seed Phrase**, atau informasi rahasia apa pun dalam issue ini!
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Komponen yang Bermasalah
+      description: Pilih modul di mana bug ditemukan.
+      options:
+        - "Wallet Generator & Balances"
+        - "Token Creation & Metadata (Pump.fun / Raydium)"
+        - "Jito Bundler & Execution"
+        - "Volume Bot & Market Making"
+        - "Solana RPC / Network Connection"
+        - "UI / Layout / Responsiveness"
+        - "Deployment / Railway / Vercel"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: network
+    attributes:
+      label: Solana Network
+      description: Di jaringan mana masalah terjadi?
+      options:
+        - "Solana Mainnet-Beta"
+        - "Solana Devnet"
+        - "Solana Testnet"
+        - "Localnet"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Deskripsi Masalah
+      description: Jelaskan apa yang terjadi dan bagaimana masalah muncul.
+      placeholder: Contoh: Saat menekan tombol Generate 20 Wallets, proses terhenti di wallet ke-12...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Langkah untuk Mereproduksi (Step to Reproduce)
+      description: Tuliskan langkah runtut untuk memunculkan bug.
+      value: |
+        1. Buka tab '...'
+        2. Klik tombol '...'
+        3. Masukkan parameter '...'
+        4. Terlihat error '...'
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Perilaku yang Diharapkan
+      description: Apa yang seharusnya terjadi?
+      placeholder: Seharusnya semua 20 wallet berhasil di-generate dan tersimpan di session lokal.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Pesan Error / Console Logs (Opsional)
+      description: Salin pesan error dari browser console atau terminal server (JANGAN masukkan private key!).
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Konfirmasi Keamanan
+      options:
+        - label: Saya mengonfirmasi bahwa saya **TIDAK** menyertakan Private Key atau RPC Secret Key dalam laporan ini.
+          required: true
+        - label: Saya telah mengecek issue sebelumnya dan tidak ada laporan serupa yang masih terbuka.
+          required: true

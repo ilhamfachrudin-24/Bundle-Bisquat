@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Project } from '@/types/solbundler';
-import { ShieldCheck, Activity, Layers, ArrowUpRight, Wallet } from 'lucide-react';
+import { ShieldCheck, Activity, Layers, ArrowUpRight, Wallet, RotateCw } from 'lucide-react';
 import { formatAddress } from '@/services/solana';
 
 interface HeaderProps {
@@ -13,6 +13,8 @@ interface HeaderProps {
   onConnectWallet: () => void;
   connectedWalletAddress: string | null;
   walletBalanceSol?: number | null;
+  isSyncingBalance?: boolean;
+  onSyncBalance?: () => void;
 }
 
 export default function Header({
@@ -22,7 +24,9 @@ export default function Header({
   onOpenStealth,
   onConnectWallet,
   connectedWalletAddress,
-  walletBalanceSol
+  walletBalanceSol,
+  isSyncingBalance,
+  onSyncBalance
 }: HeaderProps) {
   const pnlIsNegative = selectedProject ? selectedProject.pnlSol < 0 : false;
   const pnlIsPositive = selectedProject ? selectedProject.pnlSol > 0 : false;
@@ -119,32 +123,46 @@ export default function Header({
           <span>Jito MEV Bundler Ready</span>
         </div>
 
-        {/* Connect Wallet Header Button */}
-        <button
-          onClick={onConnectWallet}
-          className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-            connectedWalletAddress
-              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 hover:bg-emerald-900/50 hover:border-emerald-500/60'
-              : 'bg-[#1c182a] hover:bg-[#251f38] border-purple-500/40 text-purple-300 hover:text-purple-200 shadow-sm'
-          }`}
-        >
-          {connectedWalletAddress ? (
-            <>
+        {/* Connect Wallet Header Button & Live Sync */}
+        {connectedWalletAddress ? (
+          <div className="flex items-center space-x-1 bg-emerald-950/40 border border-emerald-500/40 rounded-lg p-0.5 shadow-sm">
+            <button
+              onClick={onConnectWallet}
+              className="flex items-center space-x-2 px-2.5 py-1 text-xs font-semibold text-emerald-300 hover:text-white transition-all cursor-pointer"
+              title="Kelola wallet terhubung"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="font-mono text-zinc-200">{formatAddress(connectedWalletAddress, 4, 4)}</span>
-              {walletBalanceSol !== null && walletBalanceSol !== undefined && (
-                <span className="text-[11px] font-mono text-emerald-400 pl-1 border-l border-emerald-800/60">
-                  {walletBalanceSol.toFixed(4)} SOL
-                </span>
-              )}
-            </>
-          ) : (
-            <>
-              <span className="text-sm">👻</span>
-              <span>Connect Wallet</span>
-            </>
-          )}
-        </button>
+              <span className="text-[11px] font-mono text-emerald-400 font-bold pl-1 border-l border-emerald-800/60">
+                {walletBalanceSol !== null && walletBalanceSol !== undefined
+                  ? `${walletBalanceSol.toFixed(4)} SOL`
+                  : 'Syncing...'}
+              </span>
+            </button>
+
+            {onSyncBalance && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSyncBalance();
+                }}
+                disabled={isSyncingBalance}
+                title="Sinkronisasi saldo real-time (Solana RPC)"
+                className="p-1 rounded text-emerald-400 hover:text-white hover:bg-emerald-900/60 disabled:opacity-50 transition-colors cursor-pointer"
+              >
+                <RotateCw className={`w-3.5 h-3.5 ${isSyncingBalance ? 'animate-spin' : ''}`} />
+              </button>
+            )}
+          </div>
+        ) : (
+          <button
+            onClick={onConnectWallet}
+            className="flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#1c182a] hover:bg-[#251f38] border border-purple-500/40 text-purple-300 hover:text-purple-200 shadow-sm transition-all cursor-pointer"
+          >
+            <span className="text-sm">👻</span>
+            <span>Connect Wallet</span>
+          </button>
+        )}
       </div>
     </header>
   );

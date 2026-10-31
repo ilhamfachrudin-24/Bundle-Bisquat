@@ -50,19 +50,58 @@ export default function SolBundlerApp() {
     return null;
   });
   const [walletBalanceSol, setWalletBalanceSol] = useState<number | null>(null);
+  const [isSyncingWalletBalance, setIsSyncingWalletBalance] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
-  // Fetch live on-chain balance whenever connectedAddress changes
+  // Sync connected wallet balance with on-chain Solana RPC
+  const syncWalletBalance = async (addressToSync: string) => {
+    setIsSyncingWalletBalance(true);
+    try {
+      const bal = await fetchLiveSolBalance(addressToSync);
+      if (bal !== null) {
+        setWalletBalanceSol(bal);
+      }
+    } finally {
+      setIsSyncingWalletBalance(false);
+    }
+  };
+
+  // Continuous real-time auto-synchronization (every 8 seconds & on window focus)
   useEffect(() => {
     if (!connectedAddress) return;
+
     let isCancelled = false;
+
+    // Immediate initial sync via async Promise
     fetchLiveSolBalance(connectedAddress).then((bal) => {
       if (!isCancelled && bal !== null) {
         setWalletBalanceSol(bal);
       }
     });
+
+    // Continuous background polling every 8 seconds
+    const interval = setInterval(() => {
+      fetchLiveSolBalance(connectedAddress).then((bal) => {
+        if (!isCancelled && bal !== null) {
+          setWalletBalanceSol(bal);
+        }
+      });
+    }, 8000);
+
+    // Immediate sync when user refocuses browser window
+    const handleFocus = () => {
+      fetchLiveSolBalance(connectedAddress).then((bal) => {
+        if (!isCancelled && bal !== null) {
+          setWalletBalanceSol(bal);
+        }
+      });
+    };
+    window.addEventListener('focus', handleFocus);
+
     return () => {
       isCancelled = true;
+      clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
     };
   }, [connectedAddress]);
 
@@ -78,6 +117,7 @@ export default function SolBundlerApp() {
           try {
             localStorage.setItem('solbundler_connected_wallet', addr);
           } catch {}
+          syncWalletBalance(addr);
         } else {
           setConnectedAddress(null);
           try {
@@ -108,9 +148,13 @@ export default function SolBundlerApp() {
     try {
       localStorage.setItem('solbundler_connected_wallet', address);
     } catch {}
-    fetchLiveSolBalance(address).then((bal) => {
-      if (bal !== null) setWalletBalanceSol(bal);
-    });
+    syncWalletBalance(address);
+  };
+
+  const handleManualSyncWalletBalance = () => {
+    if (connectedAddress) {
+      syncWalletBalance(connectedAddress);
+    }
   };
 
   const handleDisconnectWallet = () => {
@@ -521,6 +565,8 @@ export default function SolBundlerApp() {
         onConnectWallet={() => setIsConnectModalOpen(true)}
         connectedWalletAddress={connectedAddress}
         walletBalanceSol={walletBalanceSol}
+        isSyncingBalance={isSyncingWalletBalance}
+        onSyncBalance={handleManualSyncWalletBalance}
       />
 
       {/* Main Workspace: Sidebar + View Content */}

@@ -36,14 +36,26 @@ export async function POST(req: NextRequest) {
         source: 'solana-rpc'
       });
     } catch (rpcError) {
-      // In sandbox or rate limited environment, provide safe response without crashing
-      return NextResponse.json({
-        address: pubkey.toBase58(),
-        balanceLamports: 0,
-        balanceSol: 0,
-        source: 'cached-fallback',
-        notice: 'Public RPC rate-limited or unreachable; configure HELIUS_API_KEY for dedicated RPC throughput.'
-      });
+      // In case primary RPC is rate-limited, query backup RPC before fallback
+      try {
+        const backupConn = new Connection('https://rpc.ankr.com/solana', 'confirmed');
+        const lamports = await backupConn.getBalance(pubkey);
+        const sol = Number(lamports) / Number(LAMPORTS_PER_SOL);
+        return NextResponse.json({
+          address: pubkey.toBase58(),
+          balanceLamports: lamports,
+          balanceSol: sol,
+          source: 'solana-backup-rpc'
+        });
+      } catch {
+        return NextResponse.json({
+          address: pubkey.toBase58(),
+          balanceLamports: 0,
+          balanceSol: 0,
+          source: 'cached-fallback',
+          notice: 'Public RPC rate-limited or unreachable; configure HELIUS_API_KEY or SOLANA_RPC_ENDPOINT for dedicated RPC throughput.'
+        });
+      }
     }
   } catch {
     return NextResponse.json({ error: 'Failed to query balance' }, { status: 500 });

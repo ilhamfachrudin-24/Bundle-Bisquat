@@ -68,15 +68,19 @@ Keamanan aset dan data sensitif pengguna adalah prioritas nomor 1 pada SolBundle
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## 🛠️ Arsitektur Multi-Bahasa Sesuai Kebutuhan Spesifik
 
-- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
-- **UI Library**: React 19, [Tailwind CSS v4](https://tailwindcss.com/), [Lucide React](https://lucide.dev/)
-- **Animasi**: [Motion](https://motion.dev/)
-- **Web3 & Blockchain**:
-  - `@solana/web3.js` (Koneksi RPC, pembuatan Keypair, transaksi Solana)
-  - `bs58` (Encoding & decoding private key Base58)
-- **AI Engine**: `@google/genai` (Server-side Google Gemini API integration)
+Sistem ini dirancang dengan prinsip pemilihan bahasa pemrograman terbaik sesuai peruntukan (*the right tool for the job*):
+
+1. **🦀 Rust — On-Chain Program & Ultra-Low Latency MEV Engine**:
+   - `programs/solbundler/src/lib.rs`: Smart contract Solana native (Rust SBF) untuk dispersi dana atomik, sweep saldo, dan verifikasi Jito Tip dalam satu slot.
+   - `crates/jito-bundler/src/main.rs`: Searcher client Rust multi-threaded berkecepatan tinggi (<10ms) untuk merakit dan mengirim bundle langsung ke Jito Block Engine.
+2. **🐍 Python — Autonomous Volume Bot & CEX Disperser**:
+   - `scripts/python/volume_bot.py`: Bot market maker otomatis dengan 3 fase natural, random delay (jitter 3–15 detik), dan simulasi swap anti-bot detector.
+   - `scripts/python/okx_stealth_disperser.py`: Skrip pendanaan mandiri via API OKX dengan enkripsi HMAC SHA256.
+3. **⚡ TypeScript / React 19 / Next.js 15 — Full-Stack Web3 Dashboard**:
+   - Dashboard antarmuka pengguna interaktif, pembuat Solana keypair Ed25519 di browser, serta proxy RPC dengan backup otomatis.
+   - Sinkronisasi saldo otomatis real-time setiap 8 detik dan saat fokus browser.
 
 ---
 
@@ -181,16 +185,26 @@ Railway adalah platform cloud modern yang sangat cocok untuk aplikasi Next.js:
 
 ---
 
-## 🤖 Otomasi Deploy via GitHub Actions (CI/CD)
+## 🤖 Ekosistem GitHub Actions & GitHub Projects
 
-Repository ini telah dilengkapi dengan 4 workflow GitHub Actions otomatis di folder `.github/workflows/`:
+Repository ini telah dilengkapi dengan 6 workflow GitHub Actions otomatis di folder `.github/workflows/`, Issue Templates interaktif, dan Pull Request Template:
 
 | Workflow File | Fungsi & Pemicu |
-|---------------|-----------------|
+|---|---|
 | **`ci.yml`** | Menjalankan typecheck & build Next.js pada setiap `push` dan `pull_request`. |
-| **`deploy.yml`** | Otomasi deploy ke **Vercel Production** saat push ke branch `main`. |
 | **`deploy-railway.yml`** | Otomasi deploy ke **Railway** via Railway CLI saat push ke branch `main`. |
+| **`deploy.yml`** | Otomasi deploy ke **Vercel Production** saat push ke branch `main`. |
 | **`security.yml`** | Memindai kebocoran kunci privat (*secret leaks* via Gitleaks), analisis keamanan kode (CodeQL SAST), dan audit dependensi npm. |
+| **`project-automation.yml`** | Auto-labeling, triage selamat datang, dan otomatisasi kartu **GitHub Projects (Kanban)** untuk Issue & PR baru. |
+| **`release.yml`** | Otomasi pembuatan GitHub Release, changelog, dan kompresi bundle saat push tag versi (`v*`). |
+
+### 📋 Manajemen Issue & Template
+- **🐛 Bug Report Template**: `.github/ISSUE_TEMPLATE/bug_report.yml`
+- **✨ Feature Request Template**: `.github/ISSUE_TEMPLATE/feature_request.yml`
+- **🚀 Token Launch Support**: `.github/ISSUE_TEMPLATE/token_launch_issue.yml`
+- **📝 Pull Request Template**: `.github/pull_request_template.md` (dilengkapi Checklist Keamanan Solana).
+
+> 📖 **Panduan Lengkap Setup Project Board & Secrets**: Silakan baca panduan lengkap di [**`GITHUB_SETUP.md`**](./GITHUB_SETUP.md) untuk langkah membuat Kanban Board, label warna, dan integrasi GitHub Project.
 
 ---
 
@@ -210,6 +224,13 @@ Buka repository GitHub Anda ➜ Pilih tab **Settings** ➜ **Secrets and variabl
 | `VERCEL_TOKEN` | **Wajib** | Buka [vercel.com/account/tokens](https://vercel.com/account/tokens) ➜ Klik Create Token. |
 | `VERCEL_ORG_ID` | **Wajib** | Vercel Dashboard ➜ Settings ➜ General ➜ Team/User ID. |
 | `VERCEL_PROJECT_ID` | **Wajib** | Vercel Project ➜ Settings ➜ General ➜ Project ID. |
+
+#### C. Secrets untuk GitHub Project Automation (`project-automation.yml`)
+| Nama Secret | Wajib? | Kegunaan |
+|-------------|:------:|----------|
+| `GH_PROJECT_URL` | Opsional | URL Project Board Anda (contoh: `https://github.com/users/username/projects/1`) |
+| `ADD_TO_PROJECT_PAT` | Opsional | Personal Access Token dengan izin `project` untuk menghubungkan issue secara otomatis |
+
 
 ---
 

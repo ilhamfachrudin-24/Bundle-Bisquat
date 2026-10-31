@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerabilities
+    url: https://github.com/novi240397/SolBundler/security/policy
+    about: Laporkan celah keamanan secara privat sesuai SECURITY.md.
+  - name: Dokumentasi Setup & GitHub Project
+    url: https://github.com/novi240397/SolBundler/blob/main/GITHUB_SETUP.md
+    about: Baca panduan konfigurasi GitHub Actions, Secrets, dan Project Board.
