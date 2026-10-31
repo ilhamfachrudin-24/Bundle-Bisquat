@@ -204,7 +204,12 @@ Repository ini telah dilengkapi dengan 6 workflow GitHub Actions otomatis di fol
 - **🚀 Token Launch Support**: `.github/ISSUE_TEMPLATE/token_launch_issue.yml`
 - **📝 Pull Request Template**: `.github/pull_request_template.md` (dilengkapi Checklist Keamanan Solana).
 
-> 📖 **Panduan Lengkap Setup Project Board & Secrets**: Silakan baca panduan lengkap di [**`GITHUB_SETUP.md`**](./GITHUB_SETUP.md) untuk langkah membuat Kanban Board, label warna, dan integrasi GitHub Project.
+### 📚 Dokumentasi GitHub Wiki & GitHub Gists
+- **📖 GitHub Wiki Lengkap**: Seluruh dokumentasi teknis komprehensif tersedia di folder [**`/wiki/`**](./wiki/README.md) (siap di-push ke tab Wiki GitHub).
+- **📜 Koleksi GitHub Gists**: 6 utilitas siap pakai (Keypair Generator, Jito Tip Checker, Volume Swap Jitter, OKX Signer, Rust Balance Checker, Docker Compose) tersedia di folder [**`/gists/`**](./gists/README.md) dan dapat diunggah otomatis dengan `python3 scripts/publish_gists.py`.
+- **📊 GitHub Project Board**: Blueprint Kanban board dan seeder issue tersedia di [**`.github/PROJECT_BOARD.md`**](./.github/PROJECT_BOARD.md).
+
+> 📖 **Panduan Lengkap Setup Project Board, Actions & Secrets**: Silakan baca panduan lengkap di [**`GITHUB_SETUP.md`**](./GITHUB_SETUP.md).
 
 ---
 

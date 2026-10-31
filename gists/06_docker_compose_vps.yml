@@ -1,0 +1,39 @@
+# Gist: Docker Compose Deployment for SolBundler & Volume Bot on Linux VPS
+# Author: novi240397 (SolBundler Suite)
+# Usage: docker compose up -d
+
+services:
+  solbundler-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: solbundler_app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_CLUSTER=mainnet-beta
+      - NEXT_PUBLIC_SOLANA_RPC_URL=${NEXT_PUBLIC_SOLANA_RPC_URL:-https://api.mainnet-beta.solana.com}
+      - SOLANA_RPC_ENDPOINT=${SOLANA_RPC_ENDPOINT:-https://api.mainnet-beta.solana.com}
+      - OKX_API_KEY=${OKX_API_KEY}
+      - OKX_API_SECRET=${OKX_API_SECRET}
+      - OKX_PASSPHRASE=${OKX_PASSPHRASE}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional Background Python Volume Bot Worker
+  volume-bot-worker:
+    image: python:3.11-slim
+    container_name: solbundler_bot
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./scripts/python:/app
+    command: >
+      bash -c "pip install -r requirements.txt && python volume_bot.py --token Fq2twFvM2ttSK4gqpbYeXWkDubJH3ZUv6r2g9HikSXru --cycles 1000"
+    environment:
+      - SOLANA_RPC_ENDPOINT=${SOLANA_RPC_ENDPOINT:-https://api.mainnet-beta.solana.com}

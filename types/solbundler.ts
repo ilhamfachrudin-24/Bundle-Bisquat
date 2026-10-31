@@ -123,3 +123,23 @@ export interface SolBundlerState {
     connected: boolean;
   };
 }
+
+export interface JitoRpcNode {
+  id: string;
+  name: string;
+  region: string;
+  url: string;
+  pingMs?: number;
+  recommended?: boolean;
+}
+
+export interface JitoBundleConfig {
+  tipAmountSol: number;
+  tipPreset: 'eco' | 'default' | 'fast' | 'turbo' | 'custom';
+  selectedNodeUrl: string;
+  tipAccount: string;
+  simulateBundleBeforeSend: boolean;
+  maxRetries: number;
+  antiClusterRouting: boolean;
+}
+

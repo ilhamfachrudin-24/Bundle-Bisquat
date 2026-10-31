@@ -1,8 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CatalogWallet } from '@/types/solbundler';
+import { CatalogWallet, JitoBundleConfig } from '@/types/solbundler';
 import { formatAddress, isValidSolanaAddress } from '@/services/solana';
+import JitoBundleConfigPanel, {
+  DEFAULT_JITO_CONFIG,
+  JITO_RPC_NODES
+} from '@/components/JitoBundleConfigPanel';
 import {
   Zap,
   RotateCw,
@@ -23,7 +27,9 @@ import {
   ExternalLink,
   ShieldCheck,
   FileCode,
-  Download
+  Download,
+  Sliders,
+  Server
 } from 'lucide-react';
 
 interface VolumeBotViewProps {
@@ -37,7 +43,16 @@ export default function VolumeBotView({
   onRefresh,
   onQuickGenerateWallets
 }: VolumeBotViewProps) {
-  const [activeTab, setActiveTab] = useState<'live' | 'rust' | 'python'>('live');
+  const [activeTab, setActiveTab] = useState<'live' | 'jito' | 'rust' | 'python'>('live');
+  const [jitoConfig, setJitoConfig] = useState<JitoBundleConfig>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('solbundler_jito_config');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return DEFAULT_JITO_CONFIG;
+  });
   const [tokenMint, setTokenMint] = useState('Fq2twFvM2ttSK4gqpbYeXWkDubJH3ZUv6r2g9HikSXru');
   const [selectedWalletIds, setSelectedWalletIds] = useState<string[]>(() =>
     wallets.slice(0, Math.min(5, wallets.length)).map((w) => w.id)
@@ -99,11 +114,14 @@ export default function VolumeBotView({
     setCurrentPhase(1);
     setVolumeGenerated(0.184);
     setTradesCount(3);
+    const nodeName =
+      JITO_RPC_NODES.find((n) => n.url === jitoConfig.selectedNodeUrl)?.name.split(' ')[0] ||
+      'Tokyo';
     const initialLog = {
       timestamp: new Date().toLocaleTimeString(),
       phase: 1,
-      action: 'Phase 1: Radar Initiated',
-      details: 'Dispatched 3 micro-buys (0.045 SOL, 0.062 SOL, 0.077 SOL) through Jito bundle.'
+      action: 'Phase 1: Radar Initiated (Jito MEV)',
+      details: `Dispatched 3 micro-buys through Jito bundle [Node: ${nodeName} | Tip: ${jitoConfig.tipAmountSol.toFixed(4)} SOL | Slot 0 Priority].`
     };
     setLogs([initialLog]);
   };
@@ -140,11 +158,15 @@ export default function VolumeBotView({
           ? formatAddress(randomWallet.pubkey, 4, 4)
           : 'Active Sub-Wallet';
 
+        const nodeName =
+          JITO_RPC_NODES.find((n) => n.url === jitoConfig.selectedNodeUrl)?.name.split(' ')[0] ||
+          'Tokyo';
+
         const newTrade = {
           timestamp: new Date().toLocaleTimeString(),
           phase: currentPhase,
-          action: currentPhase === 2 ? 'Phase 2: Bear Trap Dip' : 'Volume Buy Order',
-          details: `Wallet ${walletDisplay} executed swap: +${randAmount} SOL equivalent.`
+          action: currentPhase === 2 ? 'Phase 2: Bear Trap Dip' : 'Volume Buy (Jito Bundle)',
+          details: `Wallet ${walletDisplay} executed swap: +${randAmount} SOL [Jito ${nodeName} • Tip: ${jitoConfig.tipAmountSol.toFixed(3)} SOL].`
         };
         return [newTrade, ...prev.slice(0, 40)];
       });
@@ -157,7 +179,14 @@ export default function VolumeBotView({
     }, 5500);
 
     return () => clearInterval(interval);
-  }, [botRunning, currentPhase, wallets, selectedWalletIds]);
+  }, [
+    botRunning,
+    currentPhase,
+    wallets,
+    selectedWalletIds,
+    jitoConfig.selectedNodeUrl,
+    jitoConfig.tipAmountSol
+  ]);
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto bg-[#090d14] text-zinc-100 p-5 space-y-5">
@@ -174,7 +203,7 @@ export default function VolumeBotView({
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center space-x-1 bg-[#141923] border border-[#2b3342] p-1 rounded-lg text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-1 bg-[#141923] border border-[#2b3342] p-1 rounded-lg text-xs font-mono">
           <button
             onClick={() => setActiveTab('live')}
             className={`px-3 py-1.5 rounded-md flex items-center space-x-1.5 transition-all cursor-pointer ${
@@ -187,10 +216,21 @@ export default function VolumeBotView({
             <span>⚡ Live Web Bot</span>
           </button>
           <button
+            onClick={() => setActiveTab('jito')}
+            className={`px-3 py-1.5 rounded-md flex items-center space-x-1.5 transition-all cursor-pointer ${
+              activeTab === 'jito'
+                ? 'bg-amber-500 text-black font-bold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>🚀 Jito Bundle Config</span>
+          </button>
+          <button
             onClick={() => setActiveTab('rust')}
             className={`px-3 py-1.5 rounded-md flex items-center space-x-1.5 transition-all cursor-pointer ${
               activeTab === 'rust'
-                ? 'bg-amber-500 text-black font-bold shadow-sm'
+                ? 'bg-orange-500 text-black font-bold shadow-sm'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
@@ -244,6 +284,76 @@ export default function VolumeBotView({
                   placeholder="Pump.fun token mint pubkey..."
                   className="w-full px-3 py-2 bg-[#161c26] border border-[#2b3342] rounded-lg text-xs font-mono text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
                 />
+              </div>
+
+              {/* Jito MEV Bundle Configuration Card */}
+              <div className="bg-[#141923] border border-amber-900/50 rounded-lg p-3 text-xs space-y-2.5 font-mono">
+                <div className="flex items-center justify-between pb-1.5 border-b border-[#21262d]">
+                  <div className="flex items-center space-x-1.5 text-amber-400 font-bold">
+                    <Zap className="w-3.5 h-3.5" />
+                    <span>Jito MEV Bundle Active</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('jito')}
+                    className="text-[10px] text-amber-400 hover:text-amber-300 underline cursor-pointer"
+                  >
+                    Buka Pengaturan Lengkap &rarr;
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div>
+                    <span className="text-zinc-500 text-[10px] block">Tip Amount:</span>
+                    <span className="font-bold text-amber-400">{jitoConfig.tipAmountSol.toFixed(4)} SOL</span>
+                    <span className="text-[9px] text-zinc-500 block">({jitoConfig.tipPreset} preset)</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 text-[10px] block">Selected RPC Node:</span>
+                    <span className="font-semibold text-white truncate block">
+                      {JITO_RPC_NODES.find((n) => n.url === jitoConfig.selectedNodeUrl)?.name.split(' ')[0] || 'Tokyo'}
+                    </span>
+                    <span className="text-[9px] text-emerald-400 block">Slot 0 Protected</span>
+                  </div>
+                </div>
+
+                {/* Quick Tip Toggle Buttons */}
+                <div className="pt-1">
+                  <div className="text-[10px] text-zinc-400 mb-1">Quick Tip Toggle:</div>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[
+                      { label: '0.001', amt: 0.001, id: 'eco' },
+                      { label: '0.010', amt: 0.010, id: 'default' },
+                      { label: '0.035', amt: 0.035, id: 'fast' },
+                      { label: '0.080', amt: 0.080, id: 'turbo' }
+                    ].map((p) => (
+                      <button
+                        key={p.amt}
+                        type="button"
+                        onClick={() => {
+                          const updated: JitoBundleConfig = {
+                            ...jitoConfig,
+                            tipAmountSol: p.amt,
+                            tipPreset: p.id as JitoBundleConfig['tipPreset']
+                          };
+                          setJitoConfig(updated);
+                          if (typeof window !== 'undefined') {
+                            try {
+                              localStorage.setItem('solbundler_jito_config', JSON.stringify(updated));
+                            } catch {}
+                          }
+                        }}
+                        className={`py-1 rounded text-[10px] border font-bold transition-all cursor-pointer ${
+                          jitoConfig.tipAmountSol === p.amt
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/70'
+                            : 'bg-[#161c26] text-zinc-400 border-[#2b3342] hover:text-white'
+                        }`}
+                      >
+                        {p.label} SOL
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Catalog Wallets Selector */}
@@ -424,6 +534,13 @@ export default function VolumeBotView({
             </div>
           </div>
         </>
+      )}
+
+      {/* TAB: JITO BUNDLE CONFIGURATION */}
+      {activeTab === 'jito' && (
+        <JitoBundleConfigPanel
+          onConfigChange={(newCfg) => setJitoConfig(newCfg)}
+        />
       )}
 
       {/* TAB 2: RUST HIGH-PERFORMANCE ENGINE */}
