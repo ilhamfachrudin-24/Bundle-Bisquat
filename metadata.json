@@ -1,0 +1,6 @@
+{
+  "name": "SolBundler - Solana Stealth Bundle & Launch Suite",
+  "description": "Production-grade Solana Web3 SaaS platform for stealth bundling, wallet catalog pooling, multi-wallet launch distribution, automated volume bots, and pump.fun token management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
